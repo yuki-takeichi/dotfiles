@@ -1,5 +1,8 @@
 #! /bin/bash
 
+git submodule init
+git submodule update
+
 files=.*
 
 for file in ${files}

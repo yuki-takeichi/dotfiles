@@ -11,4 +11,5 @@
 !/.vim
 !/.gitignore
 !/.gitconfig
+!/init.sh
 #!/.gitmodules
