@@ -1,40 +1,91 @@
-" An example for a vimrc file.
-"
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2008 Jul 02
-"
-" To use it, copy it to
-"     for Unix and OS/2:  ~/.vimrc
-"	      for Amiga:  s:.vimrc
-"  for MS-DOS and Win32:  $VIM\_vimrc
-"	    for OpenVMS:  sys$login:.vimrc
-
-let lisp_rainbow = 1
-
-" When started as "evim", evim.vim will already have done these settings.
-if v:progname =~? "evim"
-  finish
-endif
-
-" Use Vim settings, rather then Vi settings (much better!).
-" This must be first, because it changes other options as a side effect.
+" autocmdをリセット (http://vim-users.jp/2009/09/hack74/)
+autocmd! 
 set nocompatible
 
+let lisp_rainbow = 1
+let mapleader = " "
+
 set hidden
-set tabstop=4
-set shiftwidth=4
 set nobackup		" do not keep a backup file, use versions instead
 
-" vunbleを有効にするための設定
+set colorcolumn=80
+
+noremap ; :
+
+
+
+"""""""""""""""""""
+" Tab by filetype "
+"""""""""""""""""""
+set shiftwidth=2 tabstop=2 expandtab " default settings 
+" http://stackoverflow.com/questions/158968/changing-vim-indentation-behavior-by-file-type
+autocmd FileType perl setlocal shiftwidth=4 tabstop=4 expandtab
+autocmd FileType go setlocal shiftwidth=4 tabstop=4 expandtab
+
+
+"""""""""""
+" Plugins "
+"""""""""""
 filetype off
+set rtp+=~/.vim/bundle/vundle/ " run time path
+call vundle#begin()
 
-set rtp+=~/.vim/bundle/vundle/
-call vundle#rc()
+Plugin 'gmarik/vundle'
 
-Bundle 'gmarik/vundle'
-Bundle 'vimgdb'
+Plugin 'vimgdb'
+Plugin 'thinca/vim-quickrun'
+Plugin 'Shougo/vimproc'
+Plugin 'vim-rooter'
+Plugin 'vim-perl/vim-perl'
+Plugin 'hotchpotch/perldoc-vim'
+Plugin 'Shougo/neocomplcache'
+Plugin 'nathanaelkane/vim-indent-guides'
+Plugin 'syntastic'
+Plugin 'altercation/vim-colors-solarized'
+Plugin 'go.vim'
+Plugin 'plantuml-syntax'
+Plugin 'fatih/vim-go'
+Plugin 'ghcmod'
+Plugin 'ag.vim'
+Plugin 'https://github.com/dleonard0/pony-vim-syntax'
 
+call vundle#end()
 filetype plugin indent on
+
+
+"""""""""""""""
+" Search Path "
+"""""""""""""""
+" 初期値をロード (http://vim-users.jp/2009/09/hack74/)
+set path& 
+set wildignore&
+
+set path+=./lib
+set wildignore+=.git/
+
+set path+=** " :find works recursively!!
+
+"""""""""""""""
+" Appearances "
+"""""""""""""""
+syntax enable
+set number
+set background=light
+colorscheme solarized
+" https://github.com/nathanaelkane/vim-indent-guides/issues/4
+autocmd VimEnter * :IndentGuidesEnable
+autocmd VimEnter * :hi IndentGuidesOdd ctermbg=lightgrey
+autocmd VimEnter * :hi IndentGuidesEven ctermbg=white
+
+
+"""""""""""""""""""""
+" Current Directory "
+"""""""""""""""""""""
+let g:rooter_manual_only = 1
+let g:rooter_use_lcd = 1
+let g:rooter_patterns = ['Rakefile', 'cpanfile', '.git/']
+autocmd BufEnter *.rb,*.pm,*.pl :Rooter
+
 
 " allow backspacing over everything in insert mode
 set backspace=indent,eol,start
@@ -107,3 +158,79 @@ if !exists(":DiffOrig")
   command DiffOrig vert new | set bt=nofile | r # | 0d_ | diffthis
 		  \ | wincmd p | diffthis
 endif
+
+
+"""""""""""""
+" Quick Run "
+"""""""""""""
+let g:quickrun_config = {}
+
+" runnerをvimprocに設定
+let g:quickrun_config['_'] = {
+            \ 'runner': 'vimproc',
+            \ "runner/vimproc/updatetime" : 100
+            \ }
+
+" perl on carton
+let g:quickrun_config['perl/carton'] = {
+            \   'cmdopt': '-Ilib',
+            \   'exec': 'carton exec perl %o %s:p %a'
+            \ }
+
+" perl prove on carton
+let g:quickrun_config['perl/carton/prove'] = {
+            \   'cmdopt': '-Ilib -It/inc',
+            \   'exec': 'carton exec prove -vcfrm --timer --trap %o %s:p %a'
+            \ }
+            "\   'exec': 'carton exec prove -r -Ilib -It/inc --harness TAP::Harness::JUnit %a'
+
+" ruby on bundle
+let g:quickrun_config['ruby'] = {
+            \   'cmdopt': '-Ilib',
+            \   'exec': 'ruby %o %a %s:p'
+            \ }
+
+" ruby on bundle
+let g:quickrun_config['ruby/bundle'] = {
+            \   'cmdopt': '-Ilib',
+            \   'exec': 'bundle exec ruby %o %a %s:p'
+            \ }
+
+let g:quickrun_config['ruby/bundle/test'] = {
+            \   'cmdopt': '-Ilib:test',
+            \   'exec': 'bundle exec ruby %o %a %s:p'
+            \ }
+"""""""""""""
+" Syntastic "
+"""""""""""""
+
+let g:syntastic_enable_signs = 1
+let g:syntastic_perl_checkers = ['perl', 'perlcritic', 'podchecker']
+let g:syntastic_enable_perl_checker = 1
+
+" Perl's security issue
+" https://github.com/scrooloose/syntastic/blob/master/syntax_checkers/perl/perl.vim#L59
+"let g:syntastic_perl_lib_path = [ './lib' ]
+"let g:syntastic_perl_interpreter = 'carton exec perl'
+let g:syntastic_perl_lib_path = [ './lib', './t/lib', './t/inc', './local/lib/perl5' ]
+let g:syntastic_perl_interpreter = 'perl'
+
+let g:syntastic_perl_perlcritic_args = "--harsh"
+
+let g:syntastic_java_javac_classpath = './*'
+
+
+""""""""""""""""""
+" Editing .vimrc "
+""""""""""""""""""
+command! MyVimRC vsplit $MYVIMRC
+autocmd BufWritePost .vimrc source %
+
+
+"""""""""""""""""""""
+" Buffer Management "
+"""""""""""""""""""""
+" bdの代替コマンド(bdだとWindowが閉じてしまう)
+command! BB bp | bd # "buffer backspace
+" バッファリストを素早く出す
+nnoremap <C-l> :ls<CR>
