@@ -3,3 +3,7 @@
 	email = yuki.takeichi@gmail.com
 [github]
 	user = yuki-takeichi
+
+[alias]
+  co = checkout
+  pocb = "!git push -u origin \"$(git rev-parse --abbrev-ref HEAD)\""
