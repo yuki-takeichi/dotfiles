@@ -49,6 +49,8 @@ Plugin 'ghcmod'
 Plugin 'ag.vim'
 Plugin 'https://github.com/dleonard0/pony-vim-syntax'
 
+Plugin 'gtags.vim'
+
 call vundle#end()
 filetype plugin indent on
 
@@ -234,3 +236,8 @@ autocmd BufWritePost .vimrc source %
 command! BB bp | bd # "buffer backspace
 " バッファリストを素早く出す
 nnoremap <C-l> :ls<CR>
+
+"""""""""""""""""""""
+" GNU Global        "
+"""""""""""""""""""""
+map <C-g> :GtagsCursor<CR>
