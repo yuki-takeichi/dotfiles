@@ -13,6 +13,7 @@
 !/.gitconfig
 !/.git-prompt.sh
 !/init.sh
+!/.zshrc
 #!/.gitmodules
 
 /.vim/bundle
